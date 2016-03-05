@@ -131,7 +131,7 @@
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "frmAbout";
-            this.Text = "frmAbout";
+            this.Text = "About";
             this.Load += new System.EventHandler(this.frmAbout_Load);
             this.ResumeLayout(false);
             this.PerformLayout();

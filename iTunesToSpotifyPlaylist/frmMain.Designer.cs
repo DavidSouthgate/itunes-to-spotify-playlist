@@ -51,6 +51,7 @@
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.txtPlaylistString = new System.Windows.Forms.RichTextBox();
+            this.bwLoadITunes = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable1)).BeginInit();
             this.panelPlaylists.SuspendLayout();
@@ -250,6 +251,13 @@
             this.txtPlaylistString.Text = "";
             this.txtPlaylistString.Click += new System.EventHandler(this.txtPlaylistString_Click);
             // 
+            // bwLoadITunes
+            // 
+            this.bwLoadITunes.WorkerReportsProgress = true;
+            this.bwLoadITunes.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwLoadITunes_DoWork);
+            this.bwLoadITunes.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bwLoadITunes_ProgressChanged);
+            this.bwLoadITunes.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bwLoadITunes_RunWorkerCompleted);
+            // 
             // frmMain
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -261,6 +269,7 @@
             this.Name = "frmMain";
             this.Text = "iTunes to Spotify Playlist";
             this.Load += new System.EventHandler(this.frmMain_Load);
+            this.Shown += new System.EventHandler(this.frmMain_Shown);
             this.Resize += new System.EventHandler(this.frmMain_Resize);
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable1)).EndInit();
@@ -298,6 +307,7 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
         private System.Windows.Forms.RichTextBox txtPlaylistString;
+        private System.ComponentModel.BackgroundWorker bwLoadITunes;
     }
 }
 

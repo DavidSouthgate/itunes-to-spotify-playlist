@@ -39,7 +39,7 @@ namespace iTunesToSpotifyPlaylist
 {
     public partial class frmMain : Form
     {
-        iTunesApp itunes = new iTunesLib.iTunesApp();
+        iTunesApp itunes;
 
         //============================================================
         // Classes used to store the spotify api response
@@ -77,20 +77,20 @@ namespace iTunesToSpotifyPlaylist
         /// </summary>
         private void frmMain_Load(object sender, EventArgs e)
         {
-            
-            //For each playlist in iTunes
-            foreach (IITPlaylist pl in itunes.LibrarySource.Playlists)
-            {
-
-                //Add playlist name to combo box
-                comboPlaylists.Items.Add(pl.Name);
-            }
-
-            //Tells the datagrid where to get data from
-            dataPlaylistGridView.DataSource = dataTable1;
+            comboPlaylists.Enabled = false;
+            cmdGetSpotifyPlaylist.Enabled = false;
+            progress.Visible = true;
 
             //Rearrange ui elements on the form using the current form size
             ui();
+        }
+
+        /// <summary>
+        /// Runs when the form has been shown
+        /// </summary>
+        private void frmMain_Shown(object sender, EventArgs e)
+        {
+            bwLoadITunes.RunWorkerAsync();
         }
 
         /// <summary>
@@ -206,6 +206,79 @@ namespace iTunesToSpotifyPlaylist
             cmdConvertAnother.Top = ClientSize.Height - cmdConvertAnother.Height - 14 - menuStrip.Height;
             cmdConvertAnother.Left = 14;
             cmdConvertAnother.Width = this.ClientSize.Width - 14 - 14;
+        }
+
+        //============================================================
+        // Background worker to load itunes and combobox
+        //============================================================
+
+        private void bwLoadITunes_DoWork(object sender, DoWorkEventArgs e)
+        {
+
+            //Report initial progress
+            bwLoadITunes.ReportProgress(20);
+
+            //Load iTunes
+            itunes = new iTunesLib.iTunesApp();
+
+            //Report progress
+            bwLoadITunes.ReportProgress(40);
+
+            //List to store playlists
+            List <string> playlists = new List<string>();
+
+            //Integer use for calculating progress
+            int i = 1;
+
+            //For each playlist in iTunes
+            foreach (IITPlaylist playlist in itunes.LibrarySource.Playlists)
+            {
+
+                //Report progress
+                bwLoadITunes.ReportProgress(50 + (int)(((50.0 / itunes.LibrarySource.Playlists.Count) * i)));
+
+                //Add playlist to list
+                playlists.Add(playlist.Name);
+
+                //Add one to  integer used to calculate progress
+                i = i + 1;
+            }
+
+            //Pass playlists to background worker result
+            e.Result = playlists;
+        }
+
+        private void bwLoadITunes_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+            //Set progress bar value
+            progress.Value = e.ProgressPercentage;
+        }
+
+        private void bwLoadITunes_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            
+            //List to store playlists
+            List<string> playlists = (List<string>)e.Result;
+            
+            //For each playlist in playlists
+            foreach (string playlist in playlists)
+            {
+
+                //Add playlist to combo box
+                comboPlaylists.Items.Add(playlist);
+            }
+
+            //Tells the datagrid where to get data from
+            dataPlaylistGridView.DataSource = dataTable1;
+
+            //Disable and enable different UI elements
+            comboPlaylists.Enabled = true;
+            cmdGetSpotifyPlaylist.Enabled = true;
+            progress.Visible = false;
+
+            //Rearrange ui elements on the form using the current form size
+            ui();
         }
 
         //============================================================
@@ -327,34 +400,48 @@ namespace iTunesToSpotifyPlaylist
             //Get name of selected playlist
             string playlist = comboPlaylists.SelectedItem.ToString();
 
-            //For each playlist in iTunes library
-            foreach (IITPlaylist pl in itunes.LibrarySource.Playlists)
+            //Attempt to select playlist
+            try
             {
 
-                //If playlist name is equal to the selected playlist name
-                if (pl.Name == playlist)
+                //For each playlist in iTunes library
+                foreach (IITPlaylist pl in itunes.LibrarySource.Playlists)
                 {
-                    //Clear the playlist data table
-                    dataTable1.Rows.Clear();
 
-                    //Disable the playlisst combo box
-                    comboPlaylists.Enabled = false;
+                    //If playlist name is equal to the selected playlist name
+                    if (pl.Name == playlist)
+                    {
+                        //Clear the playlist data table
+                        dataTable1.Rows.Clear();
 
-                    //Display progress bar
-                    progress.Visible = true;
+                        //Disable the playlisst combo box
+                        comboPlaylists.Enabled = false;
 
-                    //Disable the 'Get Spotify Playlist' Button
-                    cmdGetSpotifyPlaylist.Enabled = false;
+                        //Display progress bar
+                        progress.Visible = true;
 
-                    //Run background worker to get iTunes playlist
-                    bwGetITunesPlaylist.RunWorkerAsync(pl);
+                        //Disable the 'Get Spotify Playlist' Button
+                        cmdGetSpotifyPlaylist.Enabled = false;
 
-                    //Rearrange ui elements on the form using the current form size
-                    ui();
+                        //Run background worker to get iTunes playlist
+                        bwGetITunesPlaylist.RunWorkerAsync(pl);
 
-                    //Break out of for loop
-                    break;
+                        //Rearrange ui elements on the form using the current form size
+                        ui();
+
+                        //Break out of for loop
+                        break;
+                    }
                 }
+            }
+
+            //If error selecting playlist, display error
+            catch
+            {
+                MessageBox.Show("Error selecting playlist! Did you close iTunes?",
+                                "Error!",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
             }
         }
 
