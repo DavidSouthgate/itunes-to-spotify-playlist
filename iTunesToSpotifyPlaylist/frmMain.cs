@@ -34,6 +34,8 @@ using System.Windows.Forms;
 using iTunesLib;
 using Newtonsoft.Json;
 using System.Net;
+using System.Reflection;
+using System.Threading;
 
 namespace iTunesToSpotifyPlaylist
 {
@@ -218,8 +220,23 @@ namespace iTunesToSpotifyPlaylist
             //Report initial progress
             bwLoadITunes.ReportProgress(20);
 
-            //Load iTunes
-            itunes = new iTunesLib.iTunesApp();
+            //Attempt to load iTunes
+            try
+            {
+
+                //Load iTunes
+                itunes = new iTunesLib.iTunesApp();
+            }
+
+            //If error loading iTunes, display error stop doing work
+            catch
+            {
+                MessageBox.Show("Could not load iTunes! Is iTunes installed?",
+                                "Error!",
+                                MessageBoxButtons.OK,
+                                MessageBoxIcon.Error);
+                return;
+            }
 
             //Report progress
             bwLoadITunes.ReportProgress(40);
@@ -258,6 +275,12 @@ namespace iTunesToSpotifyPlaylist
         private void bwLoadITunes_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             
+            if(e.Result == null)
+            {
+                this.Close();
+                return;
+            }
+
             //List to store playlists
             List<string> playlists = (List<string>)e.Result;
             
@@ -527,7 +550,7 @@ namespace iTunesToSpotifyPlaylist
                 string spotify_track_id;
 
                 //If the column is null or error
-                if(row.IsNull("Spotify ID") || row["Spotify ID"] == "Not Found" || row["Spotify ID"] == "Web Error")
+                if(row.IsNull("Spotify ID") || (string)row["Spotify ID"] == "Not Found" || (string)row["Spotify ID"] == "Web Error")
                 {
 
                     //Get the track ID

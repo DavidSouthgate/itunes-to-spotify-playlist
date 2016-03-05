@@ -4,6 +4,10 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
+using System.Threading;
+using System.Reflection;
+using System.IO;
+
 namespace iTunesToSpotifyPlaylist
 {
     static class Program
