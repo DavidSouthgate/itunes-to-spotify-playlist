@@ -432,15 +432,32 @@ namespace iTunesToSpotifyPlaylist
             //For every row in the data tab;e
             foreach (DataRow row in dataTable1.Rows)
             {
-
+                
                 //Report progress
                 bwGetSpotifyIds.ReportProgress((int)(((100.0 / dataTable1.Rows.Count) * i)));
 
                 //Get the track ID
-                string spotify_track_id = get_spotify_track_id(row["song name"].ToString(), row["artist"].ToString());
+                string spotify_track_id;
+
+                //If the column is null or error
+                if(row.IsNull("Spotify ID") || row["Spotify ID"] == "Not Found" || row["Spotify ID"] == "Web Error")
+                {
+
+                    //Get the track ID
+                    spotify_track_id = get_spotify_track_id(row["song name"].ToString(), row["artist"].ToString());
+                }
+
+                //Otherwise, get track id from row
+                else
+                {
+                    spotify_track_id = row["Spotify ID"].ToString();
+                }
+
+                //Add Spotify ID to data table
+                row["Spotify ID"] = spotify_track_id;
 
                 //If error geting Spotify track ID
-                if(spotify_track_id == "Not Found" || spotify_track_id == "Web Error")
+                if (spotify_track_id == "Not Found" || spotify_track_id == "Web Error")
                 {
 
                     //If nothing has been successful in 30 seconds
@@ -463,9 +480,6 @@ namespace iTunesToSpotifyPlaylist
 
                     //Add track to playlist string
                     playlist_string = playlist_string + "spotify:track:" + spotify_track_id + " ";
-
-                    //Add Spotify ID to data table
-                    row["Spotify ID"] = spotify_track_id;
 
                     //Update last success DateTime
                     dateTimeLastSuccess = DateTime.Now;
