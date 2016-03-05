@@ -44,13 +44,13 @@
             this.cmdCopyPlaylistString = new System.Windows.Forms.Button();
             this.lblInstructions = new System.Windows.Forms.Label();
             this.lblStatus = new System.Windows.Forms.Label();
-            this.txtPlaylistString = new System.Windows.Forms.TextBox();
             this.bwGetSpotifyIds = new System.ComponentModel.BackgroundWorker();
             this.menuStrip = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.txtPlaylistString = new System.Windows.Forms.RichTextBox();
             ((System.ComponentModel.ISupportInitialize)(this.dataSet1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.dataTable1)).BeginInit();
             this.panelPlaylists.SuspendLayout();
@@ -136,13 +136,20 @@
             this.comboPlaylists.Text = "Playlists";
             this.comboPlaylists.SelectedIndexChanged += new System.EventHandler(this.comboPlaylists_SelectedIndexChanged);
             // 
+            // bwGetITunesPlaylist
+            // 
+            this.bwGetITunesPlaylist.WorkerReportsProgress = true;
+            this.bwGetITunesPlaylist.DoWork += new System.ComponentModel.DoWorkEventHandler(this.bwGetITunesPlaylist_DoWork);
+            this.bwGetITunesPlaylist.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.bwGetITunesPlaylist_ProgressChanged);
+            this.bwGetITunesPlaylist.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.bwGetITunesPlaylist_RunWorkerCompleted);
+            // 
             // panelSpotifyPlaylist
             // 
+            this.panelSpotifyPlaylist.Controls.Add(this.txtPlaylistString);
             this.panelSpotifyPlaylist.Controls.Add(this.cmdConvertAnother);
             this.panelSpotifyPlaylist.Controls.Add(this.cmdCopyPlaylistString);
             this.panelSpotifyPlaylist.Controls.Add(this.lblInstructions);
             this.panelSpotifyPlaylist.Controls.Add(this.lblStatus);
-            this.panelSpotifyPlaylist.Controls.Add(this.txtPlaylistString);
             this.panelSpotifyPlaylist.Location = new System.Drawing.Point(23, 30);
             this.panelSpotifyPlaylist.Name = "panelSpotifyPlaylist";
             this.panelSpotifyPlaylist.Size = new System.Drawing.Size(599, 257);
@@ -186,14 +193,6 @@
             this.lblStatus.TabIndex = 1;
             this.lblStatus.Text = "STATUS";
             // 
-            // txtPlaylistString
-            // 
-            this.txtPlaylistString.Location = new System.Drawing.Point(7, 20);
-            this.txtPlaylistString.Name = "txtPlaylistString";
-            this.txtPlaylistString.Size = new System.Drawing.Size(579, 20);
-            this.txtPlaylistString.TabIndex = 0;
-            this.txtPlaylistString.MouseClick += new System.Windows.Forms.MouseEventHandler(this.txtPlaylistString_MouseClick);
-            // 
             // bwGetSpotifyIds
             // 
             this.bwGetSpotifyIds.WorkerReportsProgress = true;
@@ -220,6 +219,13 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
+            // exitToolStripMenuItem
+            // 
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            // 
             // helpToolStripMenuItem
             // 
             this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -231,16 +237,18 @@
             // aboutToolStripMenuItem
             // 
             this.aboutToolStripMenuItem.Name = "aboutToolStripMenuItem";
-            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.aboutToolStripMenuItem.Size = new System.Drawing.Size(107, 22);
             this.aboutToolStripMenuItem.Text = "About";
             this.aboutToolStripMenuItem.Click += new System.EventHandler(this.aboutToolStripMenuItem_Click);
             // 
-            // exitToolStripMenuItem
+            // txtPlaylistString
             // 
-            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
-            this.exitToolStripMenuItem.Text = "Exit";
-            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
+            this.txtPlaylistString.Location = new System.Drawing.Point(7, 21);
+            this.txtPlaylistString.Name = "txtPlaylistString";
+            this.txtPlaylistString.Size = new System.Drawing.Size(579, 20);
+            this.txtPlaylistString.TabIndex = 5;
+            this.txtPlaylistString.Text = "";
+            this.txtPlaylistString.Click += new System.EventHandler(this.txtPlaylistString_Click);
             // 
             // frmMain
             // 
@@ -259,7 +267,6 @@
             this.panelPlaylists.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataPlaylistGridView)).EndInit();
             this.panelSpotifyPlaylist.ResumeLayout(false);
-            this.panelSpotifyPlaylist.PerformLayout();
             this.menuStrip.ResumeLayout(false);
             this.menuStrip.PerformLayout();
             this.ResumeLayout(false);
@@ -279,7 +286,6 @@
         private System.ComponentModel.BackgroundWorker bwGetITunesPlaylist;
         private System.Data.DataColumn dataColumn6;
         private System.Windows.Forms.Panel panelSpotifyPlaylist;
-        private System.Windows.Forms.TextBox txtPlaylistString;
         private System.Windows.Forms.Label lblStatus;
         private System.Windows.Forms.Button cmdCopyPlaylistString;
         private System.Windows.Forms.Label lblInstructions;
@@ -291,6 +297,7 @@
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem aboutToolStripMenuItem;
+        private System.Windows.Forms.RichTextBox txtPlaylistString;
     }
 }
 

@@ -41,9 +41,9 @@ namespace iTunesToSpotifyPlaylist
     {
         iTunesApp itunes = new iTunesLib.iTunesApp();
 
-        //========================================================
+        //============================================================
         // Classes used to store the spotify api response
-        //========================================================
+        //============================================================
 
         public class spotify_api
         {
@@ -60,9 +60,9 @@ namespace iTunesToSpotifyPlaylist
             public string id { get; set; }
         }
 
-        //========================================================
+        //============================================================
         // Form events and form initialisation
-        //========================================================
+        //============================================================
 
         public frmMain()
         {
@@ -208,48 +208,16 @@ namespace iTunesToSpotifyPlaylist
             cmdConvertAnother.Width = this.ClientSize.Width - 14 - 14;
         }
 
-        //========================================================
+        //============================================================
         // Functions to communicate with iTunes and Spotify
-        //========================================================
-
-        /// <summary>
-        /// Display playlist items in datagrid
-        /// </summary>
-        /// <param name="playlist">The playlist to display</param>
-        private void GetTracks(IITPlaylist playlist)
-        {
-
-            //Clear the playlist data table
-            dataTable1.Rows.Clear();
-
-            //Put the playlist tracks in a variable
-            IITTrackCollection tracks = playlist.Tracks;
-
-            //Loop for every track in the playlist
-            for (int currTrackIndex = 1; currTrackIndex <= tracks.Count; currTrackIndex++)
-            {
-
-                //Declare variable for new row
-                DataRow drnew = dataTable1.NewRow();
-
-                //Get details of current track
-                IITTrack currTrack = tracks[currTrackIndex];
-
-                //Set artist and song name in new row
-                drnew["artist"] = currTrack.Artist;
-                drnew["song name"] = currTrack.Name;
-
-                //Add bew row to the data table
-                dataTable1.Rows.Add(drnew);
-            }
-        }
+        //============================================================
 
         /// <summary>
         /// Gets the ID of the given song on Spotify
         /// </summary>
         /// <param name="song">The song title</param>
         /// <param name="artist">The song artist</param>
-        /// <returns></returns>
+        /// <returns>The ID of the song on Spotify</returns>
         private string get_spotify_track_id(string song, string artist)
         {
 
@@ -324,45 +292,96 @@ namespace iTunesToSpotifyPlaylist
             }
         }
 
-        //========================================================
+        //============================================================
         // iTunes playlist object events
-        //========================================================
+        //============================================================
 
+        /// <summary>
+        /// Runs when the 'Get Spotify Playlist' button is clicked
+        /// </summary>
         private void cmdGetSpotifyPlaylist_Click(object sender, EventArgs e)
         {
+
+            //Display the progress bar
             progress.Visible = true;
+
+            //Disable the playlists combo box
             comboPlaylists.Enabled = false;
+
+            //Disable the 'Get Spotify Playlist' button
             cmdGetSpotifyPlaylist.Enabled = false;
+
+            //Rearrange ui elements on the form using the current form size
             ui();
+
+            //Run background worker to get Spotify IDs
             bwGetSpotifyIds.RunWorkerAsync();
         }
 
+        /// <summary>
+        /// Runs when the playlists combo box has been changed
+        /// </summary>
         private void comboPlaylists_SelectedIndexChanged(object sender, EventArgs e)
         {
+
+            //Get name of selected playlist
             string playlist = comboPlaylists.SelectedItem.ToString();
+
+            //For each playlist in iTunes library
             foreach (IITPlaylist pl in itunes.LibrarySource.Playlists)
             {
+
+                //If playlist name is equal to the selected playlist name
                 if (pl.Name == playlist)
                 {
-                    GetTracks(pl);
+                    //Clear the playlist data table
+                    dataTable1.Rows.Clear();
+
+                    //Disable the playlisst combo box
+                    comboPlaylists.Enabled = false;
+
+                    //Display progress bar
+                    progress.Visible = true;
+
+                    //Disable the 'Get Spotify Playlist' Button
+                    cmdGetSpotifyPlaylist.Enabled = false;
+
+                    //Run background worker to get iTunes playlist
+                    bwGetITunesPlaylist.RunWorkerAsync(pl);
+
+                    //Rearrange ui elements on the form using the current form size
+                    ui();
+
+                    //Break out of for loop
                     break;
                 }
             }
         }
 
-        //========================================================
+        //============================================================
         // Spotify playlist object events
-        //========================================================
+        //============================================================
 
+        /// <summary>
+        /// Runs when the 'Copy Playlist String' button is pressed. Copies playlist
+        /// string to clipboard.
+        /// </summary>
         private void cmdCopyPlaylistString_Click(object sender, EventArgs e)
         {
+
+            //If string is not empty
             if (txtPlaylistString.Text != "")
             {
+
+                //Copy playlist string to clipboard
                 Clipboard.SetText(txtPlaylistString.Text);
             }
         }
 
-        private void txtPlaylistString_MouseClick(object sender, MouseEventArgs e)
+        /// <summary>
+        /// When the mouse clicks the playlist string text box, Select All.
+        /// </summary>
+        private void txtPlaylistString_Click(object sender, EventArgs e)
         {
             txtPlaylistString.SelectAll();
             txtPlaylistString.Focus();
@@ -374,42 +393,89 @@ namespace iTunesToSpotifyPlaylist
             panelSpotifyPlaylist.Visible = false;
         }
 
-        //========================================================
+        //============================================================
         // Background Worker involved in getting Spotify IDs
-        //========================================================
+        //============================================================
 
+        /// <summary>
+        /// Class used for returning result in Spotify IDs background worker
+        /// </summary>
         public class bwGetSpotifyIdsResult
         {
             public int success_count { get; set; }
             public int failure_count { get; set; }
             public string playlist_string { get; set; }
+            public bool success { get; set; }
         }
 
+        /// <summary>
+        /// Background worker to get Spotify IDs
+        /// </summary>
         private void bwGetSpotifyIds_DoWork(object sender, DoWorkEventArgs e)
         {
+            //DateTime to store last success by background worker
+            DateTime dateTimeLastSuccess = DateTime.Now;
+
+            //Declare success and failure count as 0
             int success_count = 0;
             int failure_count = 0;
+
+            //Boolean flag to store success
+            bool success = true;
+
+            //Declare empty playlist string
             string playlist_string = "";
+
+            //Declare index as 0
             int i = 0;
 
+            //For every row in the data tab;e
             foreach (DataRow row in dataTable1.Rows)
             {
-                int progress = (int)(((100.0 / dataTable1.Rows.Count) * i));
-                bwGetSpotifyIds.ReportProgress(progress);
-                string spotify_track_id = get_spotify_track_id(row["song name"].ToString(), row["artist"].ToString());
-                playlist_string = playlist_string + "spotify:track:" + spotify_track_id + " ";
-                row["Spotify ID"] = spotify_track_id;
-                i = i + 1;
 
+                //Report progress
+                bwGetSpotifyIds.ReportProgress((int)(((100.0 / dataTable1.Rows.Count) * i)));
+
+                //Get the track ID
+                string spotify_track_id = get_spotify_track_id(row["song name"].ToString(), row["artist"].ToString());
+
+                //If error geting Spotify track ID
                 if(spotify_track_id == "Not Found" || spotify_track_id == "Web Error")
                 {
+
+                    //If nothing has been successful in 30 seconds
+                    if(dateTimeLastSuccess.AddSeconds(30) <= DateTime.Now)
+                    {
+
+                        //Show error message
+                        MessageBox.Show("There seems to be a problem getting Spotify IDs. Do you have an internet connection?");
+                        success = false;
+                        break;
+                    }
+
+                    //Add one to failure count
                     failure_count++;
                 }
 
+                //Otherwise, got Spotify track ID successful
                 else
                 {
+
+                    //Add track to playlist string
+                    playlist_string = playlist_string + "spotify:track:" + spotify_track_id + " ";
+
+                    //Add Spotify ID to data table
+                    row["Spotify ID"] = spotify_track_id;
+
+                    //Update last success DateTime
+                    dateTimeLastSuccess = DateTime.Now;
+
+                    //Add one to success count
                     success_count++;
                 }
+
+                //Add one to index
+                i = i + 1;
             }
 
             bwGetSpotifyIdsResult result = new bwGetSpotifyIdsResult()
@@ -417,26 +483,46 @@ namespace iTunesToSpotifyPlaylist
                 failure_count = failure_count,
                 success_count = success_count,
                 playlist_string = playlist_string,
+                success = success,
             };
             e.Result = result;
         }
 
+        /// <summary>
+        /// Runs when the Background worker to get Spotify IDs changes progress.
+        /// </summary>
         private void bwGetSpotifyIds_ProgressChanged(object sender, ProgressChangedEventArgs e)
         {
+
+            //Set progress bar value
             progress.Value = e.ProgressPercentage;
         }
 
+        /// <summary>
+        /// Runs when the Background worker to get Spotify IDs is complete.
+        /// </summary>
         private void bwGetSpotifyIds_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+
+            //Get result
             bwGetSpotifyIdsResult result = (bwGetSpotifyIdsResult)e.Result;
 
+            //Display statis
             lblStatus.Text = result.success_count + " tracks were converted to a spotify playlist, " + result.failure_count + " failed";
 
+            //Display playlist string
             txtPlaylistString.Text = result.playlist_string;
 
-            panelPlaylists.Visible = false;
-            panelSpotifyPlaylist.Visible = true;
+            //Show spotify playlists panel if successful
+            if(result.success == true)
+            {
 
+                //Hide playlists panel and show spotify playlists panel
+                panelPlaylists.Visible = false;
+                panelSpotifyPlaylist.Visible = true;
+            }
+
+            //Hide progress bar, show playlists combo boc and show 'Get Spotify Playlist' button
             progress.Visible = false;
             comboPlaylists.Enabled = true;
             cmdGetSpotifyPlaylist.Enabled = true;
@@ -445,17 +531,93 @@ namespace iTunesToSpotifyPlaylist
             ui();
         }
 
-        //========================================================
-        // Menu strip events
-        //========================================================
+        //============================================================
+        // Background Worker involved in getting playlist from iTunes
+        //============================================================
 
+        /// <summary>
+        /// Background worker to get iTunes playlist
+        /// </summary>
+        private void bwGetITunesPlaylist_DoWork(object sender, DoWorkEventArgs e)
+        {
+
+            //The argument passed is a playlist
+            IITPlaylist playlist = (IITPlaylist)e.Argument;
+
+            //Put the playlist tracks in a variable
+            IITTrackCollection tracks = playlist.Tracks;
+
+            //Loop for every track in the playlist
+            for (int currTrackIndex = 1; currTrackIndex <= tracks.Count; currTrackIndex++)
+            {
+
+                //Report progress
+                bwGetITunesPlaylist.ReportProgress((int)(((100.0 / tracks.Count) * currTrackIndex)));
+
+                //Declare variable for new row
+                DataRow drnew = dataTable1.NewRow();
+
+                //Get details of current track
+                IITTrack currTrack = tracks[currTrackIndex];
+
+                //Set artist and song name in new row
+                drnew["artist"] = currTrack.Artist;
+                drnew["song name"] = currTrack.Name;
+
+                //Add bew row to the data table
+                dataTable1.Rows.Add(drnew);
+            }
+        }
+
+        /// <summary>
+        /// Runs when the Background worker to get itunes playlist changes progress.
+        /// </summary>
+        private void bwGetITunesPlaylist_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+
+            //Set progress bar value
+            progress.Value = e.ProgressPercentage;
+        }
+
+        /// <summary>
+        /// Runs when the Background worker to get itunes playlist is complete.
+        /// </summary>
+        private void bwGetITunesPlaylist_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+
+            //Refresh contents of the data playlist grid view
+            dataPlaylistGridView.Refresh();
+
+            //Show the playlists combo box, hide the progress bar and enable Get Spotify Playlist button
+            comboPlaylists.Enabled = true;
+            progress.Visible = false;
+            cmdGetSpotifyPlaylist.Enabled = true;
+
+            //Rearrange ui elements on the form using the current form size
+            ui();
+        }
+
+        //============================================================
+        // Menu strip events
+        //============================================================
+
+        /// <summary>
+        /// Runs when Menu Strip Item (File>Exit) is clicked
+        /// </summary>
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
+            //Closes the program
             this.Close();
         }
 
+        /// <summary>
+        /// Runs when Menu Strip Item (Help>About) is clicked
+        /// </summary>
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
+
+            //Display about form
             frmAbout frmAbout = new frmAbout();
             frmAbout.ShowDialog(this);
         }

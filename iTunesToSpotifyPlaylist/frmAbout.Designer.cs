@@ -70,9 +70,9 @@
             // 
             this.LicenseLabel.Location = new System.Drawing.Point(12, 145);
             this.LicenseLabel.Name = "LicenseLabel";
-            this.LicenseLabel.Size = new System.Drawing.Size(314, 30);
+            this.LicenseLabel.Size = new System.Drawing.Size(314, 15);
             this.LicenseLabel.TabIndex = 10;
-            this.LicenseLabel.Text = "License";
+            this.LicenseLabel.Text = "Licensed under the MIT Licence.";
             // 
             // AuthorCaption
             // 
@@ -102,11 +102,12 @@
             this.HomepageLink.TabIndex = 6;
             this.HomepageLink.TabStop = true;
             this.HomepageLink.Text = "http://davidsouthgate.co.uk";
+            this.HomepageLink.LinkClicked += new System.Windows.Forms.LinkLabelLinkClickedEventHandler(this.HomepageLink_LinkClicked);
             // 
             // CloseButton
             // 
             this.CloseButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.CloseButton.Location = new System.Drawing.Point(251, 178);
+            this.CloseButton.Location = new System.Drawing.Point(251, 163);
             this.CloseButton.Name = "CloseButton";
             this.CloseButton.Size = new System.Drawing.Size(75, 23);
             this.CloseButton.TabIndex = 5;
@@ -117,7 +118,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(338, 213);
+            this.ClientSize = new System.Drawing.Size(338, 198);
             this.Controls.Add(this.LicenseLabel);
             this.Controls.Add(this.AuthorCaption);
             this.Controls.Add(this.AuthorNameLabel);
