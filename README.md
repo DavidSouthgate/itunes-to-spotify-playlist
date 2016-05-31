@@ -1,6 +1,9 @@
 # iTunes To Spotify Playlist
 Reads an iTunes playlist and converts it into a format that Spotify can understand if the track is in the Spotify streaming library.
 
+## Update 1st June 2016
+Huh. Turns out you can just goto File > Import Playlists > iTunes to import iTunes playlists in Spotify. I'm pretty sure this wasn't a feature when I started this project. Although that method of importing heavily uses Spotify local files which often don't seem to link to the correct track in the Spotify for me.
+
 ##Usage
 - Select Playlist from Combo Box at top of Window
 - Wait for playlist details to load
